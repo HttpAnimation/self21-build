@@ -1,0 +1,49 @@
+# Docker Compose for self21 local builds
+# Source: https://gitlab.com/HttpAnimations/self21 (Rust 2024 Edition)
+#
+# Usage:
+#   ./build.sh                    # First, build the image
+#   docker-compose up -d          # Then start the container
+#
+# Or build and run in one go:
+#   docker-compose up -d --build
+#
+# Environment Variables:
+#   IMAGE_NAME: Name of the Docker image (default: self21)
+#   IMAGE_TAG: Tag of the Docker image (default: latest)
+#   PORT: Host port to expose (default: 3000)
+#   DATABASE_PATH: Path inside container for database (default: /data/database)
+#   MEDIA_PATH: Path inside container for media files (default: /data/media)
+#   HOST_DATABASE_PATH: Host path for database storage (default: ./data/database)
+#   HOST_MEDIA_PATH: Host path for media storage (default: ./data/media)
+
+version: '3.8'
+
+services:
+  self21:
+    image: ${IMAGE_NAME:-self21}:${IMAGE_TAG:-latest}
+    build:
+      context: ./self21-source
+      dockerfile: Dockerfile
+    container_name: self21
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - DATABASE_PATH=${DATABASE_PATH:-/data/database}
+      - MEDIA_PATH=${MEDIA_PATH:-/data/media}
+      - RUST_LOG=${RUST_LOG:-self21=info,tower_http=info}
+    volumes:
+      - ${HOST_DATABASE_PATH:-./data/database}:/data/database
+      - ${HOST_MEDIA_PATH:-./data/media}:/data/media
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/metrics"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+# Uncomment below to use Docker managed volumes instead of bind mounts
+# volumes:
+#   self21-database:
+#   self21-media:
