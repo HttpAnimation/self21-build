@@ -45,9 +45,6 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
-RUN useradd -m -u 1000 self21
-
 # Copy the binary from builder
 COPY --from=builder /app/target/release/self21 /app/self21
 
@@ -61,36 +58,29 @@ ENV MEDIA_PATH=/data/media
 ENV RUST_LOG=self21=info,tower_http=info
 
 # Create data directories
-RUN mkdir -p /data/database /data/media/originals /data/media/thumbnails /data/media/samples && \
-    chown -R self21:self21 /app /data
+RUN mkdir -p /data/database /data/media/originals /data/media/thumbnails /data/media/samples
 
-# Create entrypoint script that handles directory creation and drops to non-root user
+# Create entrypoint script
 COPY --chmod=755 <<'EOF' /app/entrypoint.sh
 #!/bin/bash
 set -e
 
-# Ensure directories exist (runs as root)
+# Ensure directories exist
 mkdir -p "${DATABASE_PATH}"
 mkdir -p "${MEDIA_PATH}/originals"
 mkdir -p "${MEDIA_PATH}/thumbnails"
 mkdir -p "${MEDIA_PATH}/samples"
 
-# Fix ownership for mounted volumes
-chown -R self21:self21 "${DATABASE_PATH}" "${MEDIA_PATH}"
+# Create symlinks if paths are different from defaults
+if [ "${DATABASE_PATH}" != "/data/database" ]; then
+    ln -sf "${DATABASE_PATH}" /app/database
+fi
+if [ "${MEDIA_PATH}" != "/data/media" ]; then
+    ln -sf "${MEDIA_PATH}" /app/media
+fi
 
-# Create symlinks if they don't exist
-[ ! -L /app/database ] && ln -sf "${DATABASE_PATH}" /app/database
-[ ! -L /app/media ] && ln -sf "${MEDIA_PATH}" /app/media
-
-# Drop privileges and run as self21 user
-exec gosu self21 "$@"
+exec "$@"
 EOF
-
-# Install gosu for dropping privileges
-RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
-
-# Run as root initially (entrypoint will drop to self21)
-# USER self21
 
 # Expose default port
 EXPOSE 3000
