@@ -64,25 +64,33 @@ ENV RUST_LOG=self21=info,tower_http=info
 RUN mkdir -p /data/database /data/media/originals /data/media/thumbnails /data/media/samples && \
     chown -R self21:self21 /app /data
 
-# Create entrypoint script that handles symlinks for configurable paths
+# Create entrypoint script that handles directory creation and drops to non-root user
 COPY --chmod=755 <<'EOF' /app/entrypoint.sh
 #!/bin/bash
 set -e
 
-# Ensure directories exist
+# Ensure directories exist (runs as root)
 mkdir -p "${DATABASE_PATH}"
 mkdir -p "${MEDIA_PATH}/originals"
 mkdir -p "${MEDIA_PATH}/thumbnails"
 mkdir -p "${MEDIA_PATH}/samples"
 
+# Fix ownership for mounted volumes
+chown -R self21:self21 "${DATABASE_PATH}" "${MEDIA_PATH}"
+
 # Create symlinks if they don't exist
 [ ! -L /app/database ] && ln -sf "${DATABASE_PATH}" /app/database
 [ ! -L /app/media ] && ln -sf "${MEDIA_PATH}" /app/media
 
-exec "$@"
+# Drop privileges and run as self21 user
+exec gosu self21 "$@"
 EOF
 
-USER self21
+# Install gosu for dropping privileges
+RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
+
+# Run as root initially (entrypoint will drop to self21)
+# USER self21
 
 # Expose default port
 EXPOSE 3000
