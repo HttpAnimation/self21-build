@@ -73,13 +73,13 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./self21-source
-          file: ./self21-source/Dockerfile
+          file: ./Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           build-args: |
             BUILDTIME=${{ github.event.head_commit.timestamp }}
             VERSION=${{ steps.meta.outputs.version }}
