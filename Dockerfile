@@ -1,14 +1,16 @@
-# Build stage - Using Rust 1.85+ for edition 2024 support
+# Build stage - Using Rust nightly for zune-jpeg 0.5.8 which requires rustc 1.87+
 FROM rust:1.85-bookworm AS builder
 
 WORKDIR /app
 
-# Install build dependencies
+# Install build dependencies and switch to nightly
 RUN apt-get update && apt-get install -y \
     pkg-config \
     libssl-dev \
     cmake \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rustup default nightly \
+    && rustup update nightly
 
 # Copy manifests first for better caching
 COPY Cargo.toml Cargo.lock ./
