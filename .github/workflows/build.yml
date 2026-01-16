@@ -117,13 +117,15 @@ jobs:
     steps:
       - name: Pull and test image
         run: |
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          # Convert to lowercase for Docker
+          IMAGE_NAME_LOWER=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          docker pull ${IMAGE_NAME_LOWER}:${{ github.sha }}
           
           # Start container in background
           docker run -d --name self21-test \
             -p 3000:3000 \
             -e RUST_LOG=self21=debug \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${IMAGE_NAME_LOWER}:${{ github.sha }}
           
           # Wait for container to be healthy
           echo "Waiting for container to start..."

@@ -6,11 +6,35 @@ Built with **Rust 2024 Edition**.
 
 ## Quick Start
 
-### Using the build script
+### Pull from GitHub Container Registry
+
+```bash
+# Pull the latest image
+docker pull ghcr.io/httpanimation/self21-build:latest
+
+# Run the container
+docker run -d \
+  -p 3000:3000 \
+  -v ./data:/data \
+  ghcr.io/httpanimation/self21-build:latest
+```
+
+### Using Docker Compose
 
 ```bash
 # Clone this repository
-git clone https://github.com/YOUR_USERNAME/self21-build.git
+git clone https://github.com/HttpAnimation/self21-build.git
+cd self21-build
+
+# Run with docker-compose
+docker-compose up -d
+```
+
+### Using the build script (build locally)
+
+```bash
+# Clone this repository
+git clone https://github.com/HttpAnimation/self21-build.git
 cd self21-build
 
 # Make the build script executable
@@ -18,25 +42,6 @@ chmod +x build.sh
 
 # Build the Docker image
 ./build.sh
-
-# Run with docker-compose
-docker-compose up -d
-```
-
-### Manual Build
-
-```bash
-# Clone the source
-git clone https://gitlab.com/HttpAnimations/self21.git
-
-# Build the image
-docker build -t self21:latest self21
-
-# Run the container
-docker run -d \
-  -p 3000:3000 \
-  -v ./data:/data \
-  self21:latest
 ```
 
 ## Build Script Options
