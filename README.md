@@ -77,26 +77,10 @@ Options:
 This repository includes a GitHub Actions workflow that:
 
 1. Clones the source from GitLab
-2. Builds the Docker image for multiple platforms (amd64/arm64)
+2. Builds the Docker image
 3. Pushes to GitHub Container Registry (GHCR)
-4. Optionally pushes to GitLab Container Registry and Docker Hub
 
-### Required Secrets
-
-To push to registries, configure the following secrets in your GitHub repository:
-
-| Secret | Description |
-|--------|-------------|
-| `GITHUB_TOKEN` | Automatically provided by GitHub |
-| `GITLAB_USERNAME` | GitLab username for container registry |
-| `GITLAB_TOKEN` | GitLab access token with `write_registry` scope |
-| `DOCKERHUB_TOKEN` | Docker Hub access token (optional) |
-
-### Required Variables
-
-| Variable | Description |
-|----------|-------------|
-| `DOCKERHUB_USERNAME` | Docker Hub username (optional) |
+No secrets or variables need to be configured - it uses the automatic `GITHUB_TOKEN`.
 
 ## Environment Variables
 
